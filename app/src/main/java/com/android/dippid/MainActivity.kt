@@ -45,6 +45,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
             SensorManager.SENSOR_DELAY_NORMAL
         )
+        sensorManager.registerListener(
+            this,
+            sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+        sensorManager.registerListener(
+            this,
+            sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
 
         // init UI
         val ipInput = findViewById<EditText>(R.id.input_ip)
@@ -281,7 +291,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 it.reuseAddress = true
                 if (!it.isConnected) it.connect(inetAddress, port)
             }
-            Log.i("CONNECTION", "connected to " + datagramSocket.remoteSocketAddress)
 
             val bufData: ByteArray = msg.toByteArray()
             val dataPacket =
