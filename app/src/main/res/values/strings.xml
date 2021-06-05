@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DIPPID</string>
+
+    <string name="xyz_value">x: %1$s\ny : %2$s\nz : %3$s</string>
+</resources>
