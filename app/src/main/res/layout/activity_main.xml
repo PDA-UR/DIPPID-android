@@ -118,71 +118,42 @@
             app:layout_constraintStart_toStartOf="@id/value_gyroscope"
             app:layout_constraintTop_toTopOf="@id/label_gravity" />
 
-        <TextView
-            android:id="@+id/value_button1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Button 1 - UP"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/value_gravity" />
-
-        <TextView
-            android:id="@+id/value_button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Button 2 - UP"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/value_button1" />
-
-        <TextView
-            android:id="@+id/value_button3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Button 3 - UP"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/value_button2" />
-
-        <TextView
-            android:id="@+id/value_button4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Button 4 - UP"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/value_button3" />
-
         <Button
             android:id="@+id/button_1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="24dp"
             android:text="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/value_button4" />
+            app:layout_constraintTop_toBottomOf="@id/value_gravity"
+            app:layout_constraintEnd_toStartOf="@id/button_2"/>
 
         <Button
             android:id="@+id/button_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
             android:text="2"
-            app:layout_constraintTop_toBottomOf="@id/button_1" />
+            app:layout_constraintTop_toTopOf="@id/button_1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/button_1"/>
 
         <Button
             android:id="@+id/button_3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
             android:text="3"
-            app:layout_constraintTop_toBottomOf="@id/button_2" />
+            app:layout_constraintTop_toBottomOf="@id/button_1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_4"/>
 
         <Button
             android:id="@+id/button_4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
             android:text="4"
-            app:layout_constraintTop_toBottomOf="@id/button_3" />
+            app:layout_constraintTop_toTopOf="@id/button_3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/button_3"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

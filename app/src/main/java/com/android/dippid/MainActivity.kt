@@ -26,12 +26,27 @@ import java.net.InetAddress
 import java.util.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
-
+    
     var sendingActive: Boolean = false
 
     var ipAddress: String = ""
     lateinit var inetAddress: InetAddress
     var port: Int = 0
+
+    private var stateButton1 = 0
+    private var stateButton2 = 0
+    private var stateButton3 = 0
+    private var stateButton4 = 0
+    private var accX = 0.0F
+    private var accY = 0.0F
+    private var accZ = 0.0F
+    private var gyroX = 0.0F
+    private var gyroY = 0.0F
+    private var gyroZ = 0.0F
+    private var gravX = 0.0F
+    private var gravY = 0.0F
+    private var gravZ = 0.0F
+
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,11 +79,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val button3 = findViewById<Button>(R.id.button_3)
         val button4 = findViewById<Button>(R.id.button_4)
         val sendingSwitch = findViewById<SwitchCompat>(R.id.switch_send)
-
-        var stateButton1 = 0
-        var stateButton2 = 0
-        var stateButton3 = 0
-        var stateButton4 = 0
 
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
         val savedIP = sharedPref.getString("IP_address", "default")
@@ -105,29 +115,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         button1.setOnTouchListener { v, event ->
             // v.onTouchEvent(event)
-            val stateView = findViewById<TextView>(R.id.value_button1)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton1 = 1
-                stateView.text = "Button 1 - DOWN"
+                button1.setBackgroundColor(resources.getColor(R.color.purple_500))
             }
             if (event.action == MotionEvent.ACTION_UP) {
                 stateButton1 = 0
-                stateView.text = "Button 1 - UP"
+                button1.setBackgroundColor(resources.getColor(R.color.teal_700))
             }
 
             true
         }
 
         button2.setOnTouchListener { v, event ->
-           // v.onTouchEvent(event)
-            val stateView = findViewById<TextView>(R.id.value_button2)
+            // v.onTouchEvent(event)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton2 = 1
-                stateView.text = "Button 2 - DOWN"
+                button2.setBackgroundColor(resources.getColor(R.color.purple_500))
             }
             if (event.action == MotionEvent.ACTION_UP) {
                 stateButton2 = 0
-                stateView.text = "Button 2 - UP"
+                button2.setBackgroundColor(resources.getColor(R.color.teal_700))
             }
 
             true
@@ -135,14 +143,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         button3.setOnTouchListener { v, event ->
             // v.onTouchEvent(event)
-            val stateView = findViewById<TextView>(R.id.value_button3)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton3 = 1
-                stateView.text = "Button 3 - DOWN"
+                button3.setBackgroundColor(resources.getColor(R.color.purple_500))
             }
             if (event.action == MotionEvent.ACTION_UP) {
                 stateButton3 = 0
-                stateView.text = "Button 3 - UP"
+                button3.setBackgroundColor(resources.getColor(R.color.teal_700))
             }
 
             true
@@ -150,14 +157,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         button4.setOnTouchListener { v, event ->
             // v.onTouchEvent(event)
-            val stateView = findViewById<TextView>(R.id.value_button4)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton4 = 1
-                stateView.text = "Button 4 - DOWN"
+                button4.setBackgroundColor(resources.getColor(R.color.purple_500))
             }
             if (event.action == MotionEvent.ACTION_UP) {
                 stateButton4 = 0
-                stateView.text = "Button 4 - UP"
+                button4.setBackgroundColor(resources.getColor(R.color.teal_700))
             }
 
             true
@@ -171,31 +177,49 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
-        // send button states every 1000ms
+        // send data every 10ms
         val task = object : TimerTask() {
             override fun run() {
                 if (sendingActive) {
-                    val msg1 = "{\"button_1\":\"$stateButton1\"}"
+                    val msg1 = "{\"button_1\":$stateButton1}"
                     lifecycleScope.launch {
                         sendData(msg1)
                     }
-                    val msg2 = "{\"button_2\":\"$stateButton2\"}"
+                    val msg2 = "{\"button_2\":$stateButton2}"
                     lifecycleScope.launch {
                         sendData(msg2)
                     }
-                    val msg3 = "{\"button_3\":\"$stateButton3\"}"
+                    val msg3 = "{\"button_3\":$stateButton3}"
                     lifecycleScope.launch {
                         sendData(msg3)
                     }
-                    val msg4 = "{\"button_4\":\"$stateButton4\"}"
+                    val msg4 = "{\"button_4\":$stateButton4}"
                     lifecycleScope.launch {
                         sendData(msg4)
+                    }
+
+                    val msgAcc =
+                        "{\"accelerometer\":{\"x\":$accX,\"y\":$accY,\"z\":$accZ}}"
+                    lifecycleScope.launch {
+                        sendData(msgAcc)
+                    }
+
+                    val msgGyro =
+                        "{\"gyroscope\":{\"x\":$gyroX,\"y\":$gyroY,\"z\":$gyroZ}}"
+                    lifecycleScope.launch {
+                        sendData(msgGyro)
+                    }
+
+                    val msgGrav =
+                        "{\"gravity\":{\"x\":$gravX,\"y\":$gravY,\"z\":$gravZ}}"
+                    lifecycleScope.launch {
+                        sendData(msgGrav)
                     }
                 }
             }
         }
         val timer = Timer()
-        timer.scheduleAtFixedRate(task, 0L, 1000)
+        timer.scheduleAtFixedRate(task, 0L, 10)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -205,59 +229,35 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         // accelerometer: Acceleration force along the x/y/z axis (including gravity). (m/s*s)
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            val accX = event.values[0]
-            val accY = event.values[1]
-            val accZ = event.values[2]
+            accX = event.values[0] / 9.81F
+            accY = event.values[1] / 9.81F
+            accZ = event.values[2] / 9.81F
             accValueView.text = getString(
                 R.string.xyz_value,
                 accX.toString(), accY.toString(), accZ.toString()
             )
-
-            if (sendingActive) {
-                val msg =
-                    "{\"accelerometer\":{\"x\":$accX,\"y\":$accY,\"z\":$accZ}}"
-                lifecycleScope.launch {
-                    sendData(msg)
-                }
-            }
         }
 
         // gyroscope: Rate of rotation around the x/y/z axis. (rad/s)
         if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
-            val gyroX = event.values[0]
-            val gyroY = event.values[1]
-            val gyroZ = event.values[2]
+            gyroX = event.values[0]
+            gyroY = event.values[1]
+            gyroZ = event.values[2]
             gyroValueView.text = getString(
                 R.string.xyz_value,
                 gyroX.toString(), gyroY.toString(), gyroZ.toString()
             )
-
-            if (sendingActive) {
-                val msg =
-                    "{\"gyroscope\":{\"x\":$gyroX,\"y\":$gyroY,\"z\":$gyroZ}}"
-                lifecycleScope.launch {
-                    sendData(msg)
-                }
-            }
         }
 
         // gravity: Force of gravity along the x/y/z axis. (m/s*s)
         if (event.sensor.type == Sensor.TYPE_GRAVITY) {
-            val gravX = event.values[0]
-            val gravY = event.values[1]
-            val gravZ = event.values[2]
+            gravX = event.values[0]
+            gravY = event.values[1]
+            gravZ = event.values[2]
             gravValueView.text = getString(
                 R.string.xyz_value,
                 gravX.toString(), gravY.toString(), gravZ.toString()
             )
-
-            if (sendingActive) {
-                val msg =
-                    "{\"gravity\":{\"x\":$gravX,\"y\":$gravY,\"z\":$gravZ}}"
-                lifecycleScope.launch {
-                    sendData(msg)
-                }
-            }
         }
 
     }
