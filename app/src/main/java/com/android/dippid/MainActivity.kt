@@ -27,8 +27,8 @@ import java.net.InetAddress
 import java.util.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
-    
-    var sendingActive: Boolean = false
+
+    var sendingActive = false
 
     var ipAddress: String = ""
     lateinit var inetAddress: InetAddress
@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
-        button1.setOnTouchListener { v, event ->
+        button1.setOnTouchListener { _, event ->
             // v.onTouchEvent(event)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton1 = 1
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             true
         }
 
-        button2.setOnTouchListener { v, event ->
+        button2.setOnTouchListener { _, event ->
             // v.onTouchEvent(event)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton2 = 1
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             true
         }
 
-        button3.setOnTouchListener { v, event ->
+        button3.setOnTouchListener { _, event ->
             // v.onTouchEvent(event)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton3 = 1
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             true
         }
 
-        button4.setOnTouchListener { v, event ->
+        button4.setOnTouchListener { _, event ->
             // v.onTouchEvent(event)
             if (event.action == MotionEvent.ACTION_DOWN) {
                 stateButton4 = 1
@@ -181,6 +181,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         buttonCamera.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
+            intent.putExtra("SENDING", sendingActive)
+            intent.putExtra("PORT", port)
+            intent.putExtra("ADDRESS", inetAddress.address)
+
+            deactivateSending()
+
             startActivity(intent)
         }
 
@@ -227,6 +233,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
         val timer = Timer()
         timer.scheduleAtFixedRate(task, 0L, 10)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        if (findViewById<SwitchCompat>(R.id.switch_send).isChecked) {
+            activateSending()
+        }
+
     }
 
     override fun onSensorChanged(event: SensorEvent) {

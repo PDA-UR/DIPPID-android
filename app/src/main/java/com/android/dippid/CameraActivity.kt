@@ -10,6 +10,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.opencv.android.BaseLoaderCallback
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.LoaderCallbackInterface
@@ -20,6 +24,9 @@ import org.opencv.aruco.Dictionary
 import org.opencv.core.Mat
 import org.opencv.core.MatOfInt
 import org.opencv.imgproc.Imgproc
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.util.*
 
 class CameraActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListener2 {
@@ -27,6 +34,10 @@ class CameraActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewLis
     companion object {
         private var REQUEST_CODE_CAMERA_PERMISSION = 101
     }
+
+    var sendingActive: Boolean = false
+    lateinit var inetAddress: InetAddress
+    var port: Int = 0
 
     private lateinit var rgb: Mat
     private lateinit var gray: Mat
@@ -55,6 +66,12 @@ class CameraActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewLis
     override fun onStart() {
         super.onStart()
         setContentView(R.layout.activity_camera)
+
+        val intent = intent
+        sendingActive = intent.getBooleanExtra("SENDING", sendingActive)
+        port = intent.getIntExtra("PORT", port)
+        inetAddress = InetAddress.getByAddress(intent.getByteArrayExtra("ADDRESS"))
+        Log.i("Intent Extras", "sending active: $sendingActive, port: $port, address: $inetAddress")
 
         openCvCameraView = findViewById<org.opencv.android.JavaCameraView>(R.id.camera_view)
 
@@ -165,13 +182,64 @@ class CameraActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewLis
             Log.i(
                 "DATA",
                 "corner values: ${corners[0].dump()} | id: ${
-                    ids.toArray()?.contentToString()
+                    ids.toList().first()
                 }"
             )
-            // todo: send data
+
+            val id = ids.toList().first()
+            val height = gray.rows()
+            val width = gray.cols()
+            val topLeft = normalizeCoordinates(corners[0].get(0, 0), width, height)
+            val topRight = normalizeCoordinates(corners[0].get(0, 1), width, height)
+            val bottomLeft = normalizeCoordinates(corners[0].get(0, 2), width, height)
+            val bottomRight = normalizeCoordinates(corners[0].get(0, 3), width, height)
+
+            val message =
+                "{\"marker\": {\"id\": $id," +
+                        " \"top_left\": {\"x\": ${topLeft[0]}, \"y\": ${topLeft[1]}}," +
+                        " \"top_right\": {\"x\": ${topRight[0]}, \"y\": ${topRight[1]}}," +
+                        " \"bottom_right\": {\"x\": ${bottomRight[0]}, \"y\": ${bottomRight[1]}}," +
+                        " \"bottom_left\": {\"x\": ${bottomLeft[0]}, \"y\": ${bottomLeft[1]}}}}"
+            Log.i("DATA", "message: $message")
+
+            if (sendingActive) {
+                lifecycleScope.launch {
+                    sendData(message)
+                }
+            }
         }
 
         return rgb
+    }
+
+    private fun normalizeCoordinates(array: DoubleArray, width: Int, height: Int): DoubleArray {
+        val res = DoubleArray(2)
+        res[0] = array[0] / width
+        res[1] = array[1] / height
+        return res
+    }
+
+    private suspend fun sendData(msg: String) = withContext(Dispatchers.IO) {
+        Log.i("MESSAGE TO SEND", msg)
+
+        try {
+            val datagramSocket = DatagramSocket().also {
+                it.reuseAddress = true
+                if (!it.isConnected) it.connect(inetAddress, port)
+            }
+
+            val bufData: ByteArray = msg.toByteArray()
+            val dataPacket =
+                DatagramPacket(bufData, bufData.size, inetAddress, port)
+
+            datagramSocket.send(dataPacket)
+            datagramSocket.close()
+
+        } catch (e: Exception) {
+            Log.e("SENDING", "An error occurred while sending data")
+            Log.e("SENDING", "localized msg: " + e.localizedMessage)
+            e.printStackTrace()
+        }
     }
 
 }
