@@ -2,6 +2,7 @@ package com.android.dippid
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -79,6 +80,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val button3 = findViewById<Button>(R.id.button_3)
         val button4 = findViewById<Button>(R.id.button_4)
         val sendingSwitch = findViewById<SwitchCompat>(R.id.switch_send)
+        val buttonCamera = findViewById<Button>(R.id.button_camera)
 
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
         val savedIP = sharedPref.getString("IP_address", "default")
@@ -175,6 +177,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             } else {
                 deactivateSending()
             }
+        }
+
+        buttonCamera.setOnClickListener {
+            val intent = Intent(this, CameraActivity::class.java)
+            startActivity(intent)
         }
 
         // send data every 10ms

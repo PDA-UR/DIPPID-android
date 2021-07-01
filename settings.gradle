@@ -1,2 +1,3 @@
 rootProject.name = "DIPPID"
 include ':app'
+include ':opencv344-contrib'
