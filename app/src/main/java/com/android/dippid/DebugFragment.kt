@@ -8,6 +8,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
@@ -17,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import java.lang.NumberFormatException
 import java.net.InetAddress
 import java.util.*
 
@@ -111,7 +113,13 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         }
         portInput.doOnTextChanged { text, _, _, _ ->
             if (text != null) {
-                port = Integer.parseInt(text.toString())
+                try {
+                    port = Integer.parseInt(text.toString())
+                } catch (ex: NumberFormatException) {
+                    port = 5700
+                    Log.e("PORT", "Could not format Port input to Integer. Using default" +
+                            " port instead (5700)")
+                }
             }
 
             if (sharedPref != null) {
