@@ -181,25 +181,26 @@ class CameraFragment : Fragment(R.layout.fragment_camera),
         if (corners.size > 0) {
             Aruco.drawDetectedMarkers(rgb, corners, ids)
 
-            Log.i("multiple marker", "are there multiple markers?! -> ${corners.size}")
+            corners.forEachIndexed { idx, mat ->
 
-            val id = ids.toList().first()
-            val height = gray.rows()
-            val width = gray.cols()
-            val topLeft = normalizeCoordinates(corners[0].get(0, 0), width, height)
-            val topRight = normalizeCoordinates(corners[0].get(0, 1), width, height)
-            val bottomLeft = normalizeCoordinates(corners[0].get(0, 2), width, height)
-            val bottomRight = normalizeCoordinates(corners[0].get(0, 3), width, height)
+                val id = ids.toList()[idx]
+                val height = gray.rows()
+                val width = gray.cols()
+                val topLeft = normalizeCoordinates(mat.get(0, 0), width, height)
+                val topRight = normalizeCoordinates(mat.get(0, 1), width, height)
+                val bottomLeft = normalizeCoordinates(mat.get(0, 2), width, height)
+                val bottomRight = normalizeCoordinates(mat.get(0, 3), width, height)
 
-            val message =
-                "{\"marker\": {\"id\": $id," +
-                        " \"top_left\": {\"x\": ${topLeft[0]}, \"y\": ${topLeft[1]}}," +
-                        " \"top_right\": {\"x\": ${topRight[0]}, \"y\": ${topRight[1]}}," +
-                        " \"bottom_right\": {\"x\": ${bottomRight[0]}, \"y\": ${bottomRight[1]}}," +
-                        " \"bottom_left\": {\"x\": ${bottomLeft[0]}, \"y\": ${bottomLeft[1]}}}}"
-            Log.i("DATA", "message: $message")
+                val message =
+                    "{\"marker\": {\"id\": $id," +
+                            " \"top_left\": {\"x\": ${topLeft[0]}, \"y\": ${topLeft[1]}}," +
+                            " \"top_right\": {\"x\": ${topRight[0]}, \"y\": ${topRight[1]}}," +
+                            " \"bottom_right\": {\"x\": ${bottomRight[0]}, \"y\": ${bottomRight[1]}}," +
+                            " \"bottom_left\": {\"x\": ${bottomLeft[0]}, \"y\": ${bottomLeft[1]}}}}"
+                Log.i("DATA", "message: $message")
 
-            listener?.onDataToSend(message)
+                listener?.onDataToSend(message)
+            }
         }
 
         return rgb
