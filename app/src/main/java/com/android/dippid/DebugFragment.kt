@@ -101,6 +101,10 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         ipInput.doOnTextChanged { text, _, _, _ ->
             ipAddress = text.toString()
 
+            if (ipAddress == "") {
+                ipInput.error = "Should not be empty."
+            }
+
             if (sharedPref != null) {
                 with(sharedPref.edit()) {
                     putString("IP_address", ipAddress)
@@ -111,7 +115,12 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         }
         portInput.doOnTextChanged { text, _, _, _ ->
             if (text != null) {
-                port = Integer.parseInt(text.toString())
+                try {
+                    port = Integer.parseInt(text.toString())
+                } catch (ex: NumberFormatException) {
+                    portInput.error = "Should not be empty."
+                    port = -1
+                }
             }
 
             if (sharedPref != null) {
