@@ -10,15 +10,13 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import java.net.InetAddress
 import java.util.*
+
 
 class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
 
@@ -26,6 +24,7 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
 
     var ipAddress: String = ""
     private var port: Int = 0
+    private var ipAddressSet: MutableSet<String> = mutableSetOf()
 
     private var stateButton1 = 0
     private var stateButton2 = 0
@@ -76,7 +75,7 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         )
 
         // init UI
-        val ipInput = view.findViewById<EditText>(R.id.input_ip)
+        val ipInput = view.findViewById<AutoCompleteTextView>(R.id.input_ip)
         val portInput = view.findViewById<EditText>(R.id.input_port)
         val button1 = view.findViewById<Button>(R.id.button_1)
         val button2 = view.findViewById<Button>(R.id.button_2)
@@ -86,8 +85,20 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         sendingSwitch.isChecked = (activity as MainActivity).isSendingActive()
 
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-        val savedIP = sharedPref?.getString("IP_address", ipAddress)
+        val savedIpAddresses = sharedPref?.getStringSet(
+            "IP_addresses",
+            ipAddressSet
+        )
+        val savedIP = sharedPref?.getString("last_IP", ipAddress)
         val savedPort = sharedPref?.getInt("PORT", port)
+
+        val adapter: ArrayAdapter<String> = ArrayAdapter(
+            activity as MainActivity,
+            android.R.layout.simple_dropdown_item_1line,
+            savedIpAddresses!!.toTypedArray()
+        )
+        ipInput.setAdapter(adapter)
+
 
         if (!savedIP.equals(ipAddress) && (savedIP != null) && (savedPort != port) && (savedPort != null)) {
             ipAddress = savedIP
@@ -105,12 +116,19 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
                 ipInput.error = "Should not be empty."
             }
 
-            if (sharedPref != null) {
-                with(sharedPref.edit()) {
-                    putString("IP_address", ipAddress)
-                    apply()
+            if (isValidIP(ipAddress)) {
+
+                ipAddressSet.add(ipAddress)
+
+                if (sharedPref != null) {
+                    with(sharedPref.edit()) {
+                        putString("last_IP", ipAddress)
+                        putStringSet("IP_addresses", ipAddressSet)
+                        apply()
+                    }
                 }
             }
+
 
         }
         portInput.doOnTextChanged { text, _, _, _ ->
@@ -277,10 +295,7 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
     }
 
     private fun activateSending() {
-        if (ipAddress.matches(("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" + "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$").toRegex()) &&
-            port.toString()
-                .matches(("^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\$").toRegex())
-        ) {
+        if (isValidIP(ipAddress) && isValidPort(port)) {
             listener?.onSendingActivated(port, InetAddress.getByName(ipAddress))
         } else {
             view?.findViewById<SwitchCompat>(R.id.switch_send)?.isChecked = false
@@ -290,6 +305,15 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
 
     private fun deactivateSending() {
         listener?.onSendingDeactivated()
+    }
+
+    private fun isValidIP(ip: String): Boolean {
+        return ip.matches(("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" + "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$").toRegex())
+    }
+
+    private fun isValidPort(port: Int): Boolean {
+        return port.toString()
+            .matches(("^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])\$").toRegex())
     }
 
 }
