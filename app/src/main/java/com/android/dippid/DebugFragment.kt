@@ -62,17 +62,17 @@ class DebugFragment : Fragment(R.layout.fragment_debug), SensorEventListener {
         sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
+            SensorManager.SENSOR_DELAY_FASTEST
         )
         sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
-            SensorManager.SENSOR_DELAY_NORMAL
+            SensorManager.SENSOR_DELAY_FASTEST
         )
         sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
-            SensorManager.SENSOR_DELAY_NORMAL
+            SensorManager.SENSOR_DELAY_FASTEST
         )
 
         // init UI
